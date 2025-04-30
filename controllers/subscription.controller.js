@@ -42,3 +42,101 @@ export const getUserSubscriptions = async (req, res, next) => {
         next(e);
     }
 }
+
+export const getAllSubscriptions = async (req, res, next) => {
+    try {
+        const subscriptions = await Subscription.find({});
+        res.status(200).json({ success: true, data: subscriptions });
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const getSubscriptionDetails = async (req, res, next) => {
+    try {
+        const subscription = await Subscription.findById(req.params.id);
+        if (!subscription) {
+            const error = new Error('Subscription not found');
+            error.status = 404;
+            throw error;
+        }
+        res.status(200).json({ success: true, data: subscription });
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const updateSubscription = async (req, res, next) => {
+    try {
+        const subscription = await Subscription.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true,
+        });
+        if (!subscription) {
+            const error = new Error('Subscription not found');
+            error.status = 404;
+            throw error;
+        }
+        res.status(200).json({ success: true, data: subscription });
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const deleteSubscription = async (req, res, next) => {
+    try {
+        const subscription = await Subscription.findByIdAndDelete(req.params.id);
+        if (!subscription) {
+            const error = new Error('Subscription not found');
+            error.status = 404;
+            throw error;
+        }
+        res.status(200).json({ success: true, data: {} });
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const cancelSubscription = async (req, res, next) => {
+    try {
+        const subscription = await Subscription.findByIdAndUpdate(req.params.id, { status: 'cancelled' }, { new: true });
+        if (!subscription) {
+            const error = new Error('Subscription not found');
+            error.status = 404;
+            throw error;
+        }
+        res.status(200).json({ success: true, data: subscription });
+    } catch (e) {
+        next(e);
+    }
+};
+
+export const getUpcomingRenewals = async (req, res, next) => {
+    try {
+        const userId = req.user._id;
+        const { endDate } = req.query;
+
+        let query = {
+            user: userId,
+            renewalDate: { $gte: new Date() },
+            status: 'active'
+        };
+
+        if (endDate) {
+            // Ensure endDate is a valid Date object
+            const endDateTime = new Date(endDate);
+            if (!isNaN(endDateTime.getTime())) {
+                query.renewalDate.$lte = endDateTime;
+            } else {
+                // Handle invalid date format if necessary, or just ignore
+                console.warn("Invalid endDate provided:", endDate);
+            }
+        }
+
+        const upcomingRenewals = await Subscription.find(query).sort({ renewalDate: 1 });
+        res.status(200).json({ success: true, data: upcomingRenewals });
+    } catch (e) {
+        next(e);
+    }
+};
+
