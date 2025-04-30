@@ -6,7 +6,7 @@ const subscriptionRouter = Router()
 
 subscriptionRouter.get('/', (req, res) => res.send({ title: "GET all subscriptions" }))
 
-subscriptionRouter.get('/:id', (req, res) => res.send({ title: "GET subcription details" }))
+subscriptionRouter.get('/:id', (req, res) => res.send({ title: "GET subscription details" }))
 
 subscriptionRouter.post('/', authorize, createSubscription)
 
@@ -14,7 +14,7 @@ subscriptionRouter.put('/:id', (req, res) => res.send({ title: "UPDATE all subsc
 
 subscriptionRouter.delete('/:id', (req, res) => res.send({ title: "DELETE a subscription" }))
 
-subscriptionRouter.get('/user/:id', getUserSubscriptions)
+subscriptionRouter.get('/user/:id', authorize, getUserSubscriptions);
 
 subscriptionRouter.put('/:id/cancel', (req, res) => res.send({ title: "CANCEL a user subscription" }))
 
